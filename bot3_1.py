@@ -1,6 +1,7 @@
 from collections import UserList, UserDict
 from datetime import datetime
 from colorama import Fore
+import re
 
 class Name:
     def __init__(self, name):
@@ -265,11 +266,25 @@ def createRecord(args, book): # додати перевірку формату �
         args[0].setBirthday(args[2])
         return addToBook(args[0], book)
 
+# ------- перевірка чи строка є телефонним номером
+def is_ph_number(number:str) ->bool:
+    if number.isdigit() and (10<=len(number)<=12):
+        return True
+    else:
+        return False
+
+# ------- перевірка чи строка є датою
+def is_date(date:str) ->bool:
+    # date=''.join(re.findall(r"\d{2}\.\d{2}\.\d{4}", date))
+    if ''.join(re.findall(r"\d{2}\.\d{2}\.\d{4}", date)):
+        return True
+    else:
+        return False
+
 # ------- виводить імʼя активного запису під час його редагування (під час вводу команд).
 def recMode(rec, book):
     def RecModeMane(record):
         return f"[ {Fore.GREEN}{name.getName()}{Fore.RESET} ] >>> "
-    
     print(f"{Fore.GREEN}Режим редагування запису!{Fore.RESET}\n")
     name=book.select(rec) # тимчасовий запис для редагування
     while True:
@@ -279,13 +294,13 @@ def recMode(rec, book):
             break
         elif command == "change_name" and len(args)==1:
             print(name.setName(args[0]))
-        elif command == "set_phone" and len(args)==1:
+        elif command == "set_phone" and len(args)==1 and is_ph_number(args[0]):
             print(name.setPhone(args[0]))
-        elif command == "change_phone" and len(args)==2:
+        elif command == "change_phone" and len(args)==2 and is_ph_number(args[0]) and is_ph_number(args[1]): 
             print(name.changePhone(args[0], args[1]))
-        elif command == "delete_phone" and len(args)==1:
+        elif command == "delete_phone" and len(args)==1 and is_ph_number(args[0]):
             print(name.delPhone(args[0]))
-        elif command == "set_birthday" and len(args)==1:
+        elif command == "set_birthday" and len(args)==1 and is_date(args[0]):
             print(name.setBirthday(args[0]))
         elif command == "print":
             print(name.showRecord())
@@ -296,7 +311,7 @@ def recMode(rec, book):
     return book
 
 def warning():
-    return f"{Fore.RED}Error:{Fore.RESET} Невірна команда або кількість аргументів\n{' ':7}Для довідки - введить {Fore.GREEN}help{Fore.RESET}\n"
+    return f"{Fore.RED}Error:{Fore.RESET} Невірна команда або аргумент(-ти)\n{' ':7}Для довідки - введить {Fore.GREEN}help{Fore.RESET}\n"
 
 def main():
     # ------- три початкові (тестові) записи в книзі, щоб прискорити ввід під час тестування. Всі команди (методи) - працездатні
@@ -338,13 +353,13 @@ def main():
             help('help.txt')
         elif command == "change_name" and len(args)==2:
             print(book.select(args[0]).changeName(args[1]))
-        elif command == "change_phone" and len(args)==3:
+        elif command == "change_phone" and len(args)==3 and is_ph_number(args[1]) and is_ph_number(args[2]):
             print(book.select(args[0]).changePhone(args[1], args[2]))
-        elif command == "find_phone" and len(args)==1:
+        elif command == "find_phone" and len(args)==1 and is_ph_number(args[0]): 
             print(book.findPhone(args[0]))
-        elif command == "delete_phone" and len(args)==2:
+        elif command == "delete_phone" and len(args)==2 and is_ph_number(args[1]):
             print(book.select(args[0]).delPhone(args[1]))
-        elif command == "set_phone" and len(args)==2:
+        elif command == "set_phone" and len(args)==2 and is_ph_number(args[1]):
             print(book.select(args[0]).setPhone(args[1]))
         elif command == "print" and len(args)==1:
             if book.ifExist(args[0]):
@@ -353,11 +368,11 @@ def main():
                 print(f"Запис {args[0]} не знайдено.")
         elif command == "add" and len(args)>=1:
             print(createRecord(args, book))
-        elif command == "find_birthday" and len(args)==1:
+        elif command == "find_birthday" and len(args)==1 and is_date(args[0]):
             print(book.findBirthday(args[0]))
-        elif command == "change_birthday" and len(args)==2:
+        elif command == "change_birthday" and len(args)==2 and is_date(args[1]):
             print(book.select(args[0]).birthday.changeBirthday(args[1]))
-        elif command == "set_birthday" and len(args)==2:
+        elif command == "set_birthday" and len(args)==2 and is_date(args[1]):
             print(book.select(args[0]).setBirthday(args[1]))
         elif command == "record_mode" and len(args)==1:
             if book.select(args[0]):
